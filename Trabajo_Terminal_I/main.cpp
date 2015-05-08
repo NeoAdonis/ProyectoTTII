@@ -15,7 +15,7 @@
 #include "simple_flow.h"
 #include "test_generator.h"
 
-//#define TAG_STRING "PIEH"
+#define TAG_STRING "PIEH"
 
 const int kUp = 0x00FFFF; // LIGHT BLUE
 const int kDown = 0x00FF00; // GREEN
@@ -33,9 +33,23 @@ double CalcEndpointError(double u, double v, double gtu, double gtv) {
 }
 
 typedef long long int lld;
+typedef std::map< double, lld > RX;
+
+void CountMeasuresAboveThreshold(double err, RX &r) {
+	for (auto r_p = r.begin(); r_p != ae_r.end(); r_p++) {
+		if (err >= r_p->first) {
+			r_p->second++;
+		}
+	}
+}
+
+
 lld pix_sum;
 double ae_sum, ee_sum;
-std::map< double, lld > ae_r, ee_r;
+RX ae_r, ee_r;
+
+const double HIST_MUL = 1e6;
+std::map< lld, lld > ae_hist, ee_hist;
 
 void InitStats(std::vector< int > ae_r_l, std::vector< int > ee_r_l) {
 	pix_sum = 0;
@@ -64,18 +78,46 @@ void CalcStats(cv::Mat u, cv::Mat v, cv::Mat gtu, cv::Mat gtv, cv::Mat mask) {
 			double ee = CalcEndpointError(*p_u, *p_v, *p_gtu, *p_gtv);
 			ae_sum += ae;
 			ee_sum += ee;
-			for (auto ae_r_p = ae_r.begin(); ae_r_p != ae_r.end(); ae_r_p++) {
-				if (ae >= ae_r_p->first) {
-					ae_r_p->second++;
-				}
-			}
-			for (auto ee_r_p = ee_r.begin(); ee_r_p != ee_r.end(); ee_r_p++) {
-				if (ee >= ee_r_p->first) {
-					ee_r_p->second++;
-				}
-			}
+			CountMeasuresAboveThreshold(ae, ae_r);
+			CountMeasuresAboveThreshold(ee, ee_r);
+			ae_hist[ae * HIST_MUL]++;
+			ee_hist[ee * HIST_MUL]++;
 		}
 	}
+}
+
+double GetAccuracy(std::map< lld, lld > &hist, int percentile) {
+	lld sval = pix_sum * percentile / 100;
+	lld val = 0;
+	for (auto ac : hist) { // ¡¡Puro AC!!
+		val += ac.second;
+		if (val >= sval) {
+			return ac.first / HIST_MUL;
+		}
+	}
+}
+
+double GetSD(std::map< lld, lld > &hist, double mean) {
+	double d, v = 0;
+	for (auto ac : hist) {
+		d = ac.first / HIST_MUL - mean;
+		v +=  d * d * (double)ac.second;
+	}
+	return std::sqrt(v / (double)pix_sum);
+}
+
+void WriteFlo() {
+	int width, height;
+	FILE *stream = fopen("filename", "wb");
+	fprintf(stream, TAG_STRING);
+	fwrite(&width,  sizeof(int), 1, stream);
+	fwrite(&height, sizeof(int), 1, stream);
+
+	//code for flo file
+	float xF = (float)1.0;
+	float yF = (float)1.0;
+	fwrite(&xF, sizeof(float), 1, stream);
+	fwrite(&yF, sizeof(float), 1, stream);
 }
 
 
