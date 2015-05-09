@@ -36,10 +36,8 @@ typedef long long int lld;
 typedef std::map< double, lld > RX;
 
 void CountMeasuresAboveThreshold(double err, RX &r) {
-	for (auto r_p = r.begin(); r_p != ae_r.end(); r_p++) {
-		if (err >= r_p->first) {
-			r_p->second++;
-		}
+	for (auto r_p = r.lower_bound(err); r_p != r.end(); r_p++) {
+		r_p->second++;
 	}
 }
 
@@ -69,7 +67,7 @@ void CalcStats(cv::Mat u, cv::Mat v, cv::Mat gtu, cv::Mat gtv, cv::Mat mask) {
 		double* p_v = v.ptr<double>(i);
 		double* p_gtu = gtu.ptr<double>(i);
 		double* p_gtv = gtv.ptr<double>(i);
-		char* p_mask = mask.ptr<char>(i);
+		uchar* p_mask = mask.ptr<uchar>(i);
 		for (int j = 0; j < cols; ++j, ++p_u, ++p_v, ++p_gtu, ++p_gtv, ++p_mask) {
 			if (!(*p_mask)) {
 				continue;
@@ -126,7 +124,9 @@ void WriteFlo() {
 
 int main(int argc, char** argv) {
 	if (argc < 3) {
-		std::cout << "Video input file and output directory required.";
+		int a;
+		std::cout << argc << "Video input file and output directory required.";
+		std::cin >> a;
 		return 0;
 	}
 
@@ -142,8 +142,8 @@ int main(int argc, char** argv) {
 	std::string dir = std::string(argv[1]);
 
 	
-	int width = 1920;
-	int height = 1080;
+	int width = 300;
+	int height = 200;
 
 	int orig_width;
 	int orig_height;
@@ -166,7 +166,7 @@ int main(int argc, char** argv) {
 	//int fileNumber = 7;
 	//char* number = new char[3];
 	
-	for (int i = 0; i <= 30; ++i) {
+	for (int i = 0; i <= 120; ++i) {
 		//sprintf(number, "%02d", fileNumber);
 		//std::string fileName = std::string( argv[1] ) + std::string(number) + ".flo";
 		//std::string imageName = std::string( argv[1] ) + std::string(number) + ".png";
