@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <cmath>
+#include <cstdlib>
 #include <string>
 #include <iostream>
 #include <map>
@@ -36,8 +37,9 @@ typedef long long int lld;
 typedef std::map< double, lld > RX;
 
 void CountMeasuresAboveThreshold(double err, RX &r) {
-	for (auto r_p = r.lower_bound(err); r_p != r.end(); r_p++) {
-		r_p->second++;
+	for (auto r_p = r.begin(); r_p != r.end(); r_p++) {
+		if (err >= r_p->first)
+			r_p->second++;
 	}
 }
 
@@ -49,18 +51,18 @@ RX ae_r, ee_r;
 const double HIST_MUL = 1e6;
 std::map< lld, lld > ae_hist, ee_hist;
 
-void InitStats(std::vector< int > ae_r_l, std::vector< int > ee_r_l) {
+void InitStats(std::vector< double > ae_r_l, std::vector< double > ee_r_l) {
 	pix_sum = 0;
 	ae_sum = ee_sum = 0.0;
-	for (int ae_r_v : ae_r_l) {
+	for (double ae_r_v : ae_r_l) {
 		ae_r[ae_r_v] = 0;
 	}
-	for (int ee_r_v : ee_r_l) {
+	for (double ee_r_v : ee_r_l) {
 		ee_r[ee_r_v] = 0;
 	}
 }
 
-void CalcStats(cv::Mat u, cv::Mat v, cv::Mat gtu, cv::Mat gtv, cv::Mat mask) {
+void CalcStats(cv::Mat &u, cv::Mat &v, cv::Mat &gtu, cv::Mat &gtv, cv::Mat &mask, cv::Mat &aem, cv::Mat &eem) {
 	int rows = u.rows, cols = v.cols;
 	for (int i = 0; i < rows; ++i) {
 		double* p_u = u.ptr<double>(i);
@@ -68,12 +70,21 @@ void CalcStats(cv::Mat u, cv::Mat v, cv::Mat gtu, cv::Mat gtv, cv::Mat mask) {
 		double* p_gtu = gtu.ptr<double>(i);
 		double* p_gtv = gtv.ptr<double>(i);
 		uchar* p_mask = mask.ptr<uchar>(i);
-		for (int j = 0; j < cols; ++j, ++p_u, ++p_v, ++p_gtu, ++p_gtv, ++p_mask) {
+		double* p_aem = aem.ptr<double>(i);
+		double* p_eem = eem.ptr<double>(i);
+		for (int j = 0; j < cols; ++j, ++p_u, ++p_v, ++p_gtu, ++p_gtv, ++p_mask, ++p_aem, ++p_eem) {
 			if (!(*p_mask)) {
 				continue;
 			}
+			/*
+			if (*p_gtu == 0.0 && *p_gtv == 0.0) {
+				continue;
+			}*/
+			pix_sum++;
 			double ae = CalcAngularError(*p_u, *p_v, *p_gtu, *p_gtv);
 			double ee = CalcEndpointError(*p_u, *p_v, *p_gtu, *p_gtv);
+			*p_aem = ae;
+			*p_eem = ee;
 			ae_sum += ae;
 			ee_sum += ee;
 			CountMeasuresAboveThreshold(ae, ae_r);
@@ -118,6 +129,51 @@ void WriteFlo() {
 	fwrite(&yF, sizeof(float), 1, stream);
 }
 
+void ReadFile(cv::Mat &gtx, cv::Mat &gty, std::string dir, int frame) {
+	std::string fileName = dir + "_" + std::to_string(frame) + ".txt";
+	FILE *in = fopen(fileName.c_str(), "r");
+	double x, y;
+	for (int i = 0; i < gtx.rows; i++){
+		for (int j = 0; j < gtx.cols; j++){
+			fscanf(in, "(%lf,%lf)", &x, &y);
+			gtx.at<double>(i, j) = x;
+			gty.at<double>(i, j) = y;
+		}
+		while(fgetc(in) != '\n');
+	}
+}
+
+void PrintResults(std::string dir) {
+	std::string fileName = dir + "_res.txt";
+	FILE *out = fopen(fileName.c_str(), "w");
+	double x, y;
+	fprintf(out, "Angular\n");
+	fprintf(out, "Avg = %lf\n", ae_sum / pix_sum);
+	for (auto r : ae_r) {
+		fprintf(out, "R%.3lf : %.2lf\n", r.first, ((double)r.second / (double)pix_sum) * 100.0);
+	}
+	fprintf(out, "Endpoint\n");
+	fprintf(out, "Avg = %lf\n", ee_sum / pix_sum);
+	for (auto r : ee_r) {
+		fprintf(out, "R%.1lf : %.2lf\n", r.first, ((double)r.second / (double)pix_sum) * 100.0);
+	}
+	fclose(out);
+
+	fileName = dir + "_hist.csv";
+	out = fopen(fileName.c_str(), "w");
+	lld i = 100000;
+	auto p = ee_hist.begin();
+	for (; p != ee_hist.end();  i += 100000) {
+		lld sum = 0;
+		while (p != ee_hist.end() && p->first < i) {
+			sum += p->second;
+			p++;
+		}
+		if (sum != 0LL)
+			fprintf(out, "%lf,%lf\n", (double)i / HIST_MUL, (double)sum);
+	}
+}
+
 
 //read nameFile starting_number 
 //write to flow10.flo
@@ -158,15 +214,31 @@ int main(int argc, char** argv) {
 
 	VideoFactory lk_vf(dir + "-lk-flow.avi", width, height, vcapture.get(CV_CAP_PROP_FPS));
 
+	VideoFactory ee_vf(dir + "-lk-ee.avi", width, height, vcapture.get(CV_CAP_PROP_FPS));
+
 	cv::Mat vx, vy;
 	std::cout << "\n\nStarting process.\n";
 	int fps = (int)vcapture.get(CV_CAP_PROP_FPS);
 	Frame* lk_result = new Frame(false);
+	Frame* ee_result = new Frame(true);
 	
 	//int fileNumber = 7;
 	//char* number = new char[3];
+
+	std::vector< double > ae_rl;
+	std::vector< double > ee_rl;
+
+	ae_rl.push_back((CV_PI / 180.0) * 2.5);
+	ae_rl.push_back((CV_PI / 180.0) * 5.0);
+	ae_rl.push_back((CV_PI / 180.0) * 10.0);
 	
-	for (int i = 0; i <= 120; ++i) {
+	ee_rl.push_back(0.5);
+	ee_rl.push_back(1.0);
+	ee_rl.push_back(2.0);
+
+	InitStats(ae_rl, ee_rl);
+	
+	for (int i = 0; i <= 30; ++i) {
 		//sprintf(number, "%02d", fileNumber);
 		//std::string fileName = std::string( argv[1] ) + std::string(number) + ".flo";
 		//std::string imageName = std::string( argv[1] ) + std::string(number) + ".png";
@@ -180,6 +252,9 @@ int main(int argc, char** argv) {
 			lk_result->SetMatrix(&capture);
 			lk_result->Rescale(width, height);
 			lk_result->GetMatrixOnCache();
+			ee_result->SetMatrix(&capture);
+			ee_result->Rescale(width, height);
+			ee_result->GetMatrixOnCache();
 		}
 
 		Frame* frame = new Frame(&capture);
@@ -196,27 +271,27 @@ int main(int argc, char** argv) {
 
 		lk.CalculateFlow(vx, vy);
 
-		//Code for flo file
-		//FILE *stream = fopen(fileName.c_str(), "wb");
-		//puts(fileName.c_str());
-		// write the header
-		//fprintf(stream, TAG_STRING);
-		//fwrite(&width,  sizeof(int),   1, stream);
-		//fwrite(&height, sizeof(int),   1, stream);
+		cv::Mat mask = cv::Mat(height, width, CV_8U);
+		cv::Mat gtx = cv::Mat(height, width, CV_64F);
+		cv::Mat gty = cv::Mat(height, width, CV_64F);
+		cv::Mat aem = cv::Mat(height, width, CV_64F);
+		cv::Mat eem = cv::Mat(height, width, CV_64F);
+
+		ReadFile(gtx, gty, dir, i);
+
+		for (int i = 0; i < mask.rows; i++){
+			for (int j = 0; j < mask.cols; j++){
+				mask.at<uchar>(i, j) = 1;
+			}
+		}
+		
+		CalcStats(vx, vy, gtx, gty, mask, aem, eem);
 		
 		for (int x = 0; x < height; ++x) {
 			double* ptr_vx = vx.ptr<double>(x);
 			double* ptr_vy = vy.ptr<double>(x);
 			for (int y = 0; y < width; ++y, ++ptr_vx, ++ptr_vy) {
 				double X = *ptr_vx, Y = *ptr_vy;
-
-				//code for flo file
-				//float xF = (float)X;
-				//float yF = (float)Y;
-
-				// write the rows
-				//fwrite(&xF, sizeof(float), 1, stream);
-				//fwrite(&yF, sizeof(float), 1, stream);
 
 				int hor_color = 0;
 				double intensity = std::min(std::abs(Y) / kIntensity, 1.0);
@@ -234,10 +309,21 @@ int main(int argc, char** argv) {
 				lk_result->SetPixel(x, y, hor_color | ver_color);
 			}
 		}
-		//fclose(stream);
 		lk_result->GetCacheOnMatrix();
 		lk_vf.AddFrame(lk_result->GetMatrix());
+
+		for (int x = 0; x < height; ++x) {
+			double* ptr_ee = eem.ptr<double>(x);
+			for (int y = 0; y < width; ++y, ++ptr_ee) {
+				ee_result->SetPixel(x, y, std::min(255, (int)(255 * (*ptr_ee / 10.0))));
+			}
+		}
+		//fclose(stream);
+		ee_result->GetCacheOnMatrix();
+		ee_vf.AddFrame(ee_result->GetMatrix());
 	}
+
+	PrintResults(dir);
 	
 	
 	/*

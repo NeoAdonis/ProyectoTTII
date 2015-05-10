@@ -62,14 +62,12 @@ void LucasKanade::CalculateFlow(cv::Mat& vel_x, cv::Mat& vel_y) {
 			b(0, 0) = -ixt;
 			b(1, 0) = -iyt;
 
-			// Solve linear equation
-			/*
-			if (abs(ixx * iyy - ixy * ixy) < 1e-10) {
-				printf("%.2lf %.2lf %.2lf, ", ixx, iyy, ixy);
-				*ptr_x = 0.0;
-				*ptr_y = 0.0;
+			if (std::abs(ixx * iyy - ixy * ixy) < 1e-6) {
+				*ptr_x = *ptr_y = 0.0;
 				continue;
-			}*/
+			}
+
+			// Solve linear equation
 			vel_vector = a.inv() * b;
 			*ptr_x = vel_vector(0, 0);
 			*ptr_y = vel_vector(1, 0);
