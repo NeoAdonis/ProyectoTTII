@@ -170,3 +170,11 @@ double StatsTracker::GetAngularErrorAvg() {
 double StatsTracker::GetEndpointErrorAvg() {
 	return (double)ee_sum / (double)pix_sum;
 }
+
+void StatsTracker::AddTime(std::clock_t time) {
+	times.push_back(time);
+}
+
+std::vector< std::clock_t > StatsTracker::GetTimes() {
+	return times;
+}

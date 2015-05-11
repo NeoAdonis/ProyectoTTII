@@ -2,6 +2,7 @@
 
 #include <map>
 #include <vector>
+#include <ctime>
 
 #include "opencv2/video/tracking.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
@@ -17,6 +18,7 @@ public:
 	double ae_sum, ee_sum;
 	RX ae_r, ee_r;
 	std::map< lld, lld > ae_hist, ee_hist;
+	std::vector< std::clock_t > times;
 
 	StatsTracker();
 	double CalcAngularError(double u, double v, double gtu, double gtv);
@@ -32,6 +34,8 @@ public:
 	double GetEndpointErrorAvg();
 	std::map< double, lld > GetEndpointErrHistogram(double start, double finish, double step);
 	std::map< double, lld > GetAngularErrHistogram(double start, double finish, double step);
+	void AddTime(std::clock_t time);
+	std::vector< std::clock_t > GetTimes();
 	~StatsTracker();
 private:
 	std::map< double, lld > GetHistogram(std::map< lld, lld > e_hist, double start, double finish, double step);

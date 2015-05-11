@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ctime>
 #include <string>
 #include <map>
 
@@ -66,6 +67,9 @@ namespace Trabajo_Terminal_I {
 	private: System::Windows::Forms::Label^  lblAe;
 	private: System::Windows::Forms::DataVisualization::Charting::Chart^  chartEe;
 	private: System::Windows::Forms::DataVisualization::Charting::Chart^  chartAe;
+	private: System::Windows::Forms::Label^  lblTime;
+	private: System::Windows::Forms::DataVisualization::Charting::Chart^  chartTimes;
+
 	protected:
 
 	protected:
@@ -89,16 +93,22 @@ namespace Trabajo_Terminal_I {
 			System::Windows::Forms::DataVisualization::Charting::ChartArea^  chartArea2 = (gcnew System::Windows::Forms::DataVisualization::Charting::ChartArea());
 			System::Windows::Forms::DataVisualization::Charting::Legend^  legend2 = (gcnew System::Windows::Forms::DataVisualization::Charting::Legend());
 			System::Windows::Forms::DataVisualization::Charting::Series^  series2 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
+			System::Windows::Forms::DataVisualization::Charting::ChartArea^  chartArea3 = (gcnew System::Windows::Forms::DataVisualization::Charting::ChartArea());
+			System::Windows::Forms::DataVisualization::Charting::Legend^  legend3 = (gcnew System::Windows::Forms::DataVisualization::Charting::Legend());
+			System::Windows::Forms::DataVisualization::Charting::Series^  series3 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
 			this->pbSource = (gcnew System::Windows::Forms::PictureBox());
 			this->pbFlow = (gcnew System::Windows::Forms::PictureBox());
 			this->lblEe = (gcnew System::Windows::Forms::Label());
 			this->lblAe = (gcnew System::Windows::Forms::Label());
 			this->chartEe = (gcnew System::Windows::Forms::DataVisualization::Charting::Chart());
 			this->chartAe = (gcnew System::Windows::Forms::DataVisualization::Charting::Chart());
+			this->lblTime = (gcnew System::Windows::Forms::Label());
+			this->chartTimes = (gcnew System::Windows::Forms::DataVisualization::Charting::Chart());
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pbSource))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pbFlow))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->chartEe))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->chartAe))->BeginInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->chartTimes))->BeginInit();
 			this->SuspendLayout();
 			// 
 			// pbSource
@@ -167,11 +177,39 @@ namespace Trabajo_Terminal_I {
 			this->chartAe->TabIndex = 5;
 			this->chartAe->Text = L"chart1";
 			// 
+			// lblTime
+			// 
+			this->lblTime->AutoSize = true;
+			this->lblTime->Location = System::Drawing::Point(659, 9);
+			this->lblTime->Name = L"lblTime";
+			this->lblTime->Size = System::Drawing::Size(42, 13);
+			this->lblTime->TabIndex = 6;
+			this->lblTime->Text = L"Time: --";
+			// 
+			// chartTimes
+			// 
+			chartArea3->Name = L"ChartArea1";
+			this->chartTimes->ChartAreas->Add(chartArea3);
+			legend3->Name = L"Legend1";
+			this->chartTimes->Legends->Add(legend3);
+			this->chartTimes->Location = System::Drawing::Point(662, 58);
+			this->chartTimes->Name = L"chartTimes";
+			series3->ChartArea = L"ChartArea1";
+			series3->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::Spline;
+			series3->Legend = L"Legend1";
+			series3->Name = L"Time";
+			this->chartTimes->Series->Add(series3);
+			this->chartTimes->Size = System::Drawing::Size(347, 171);
+			this->chartTimes->TabIndex = 7;
+			this->chartTimes->Text = L"chart1";
+			// 
 			// TesterForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->ClientSize = System::Drawing::Size(667, 420);
+			this->ClientSize = System::Drawing::Size(1019, 416);
+			this->Controls->Add(this->chartTimes);
+			this->Controls->Add(this->lblTime);
 			this->Controls->Add(this->chartAe);
 			this->Controls->Add(this->chartEe);
 			this->Controls->Add(this->lblAe);
@@ -185,6 +223,7 @@ namespace Trabajo_Terminal_I {
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pbFlow))->EndInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->chartEe))->EndInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->chartAe))->EndInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->chartTimes))->EndInit();
 			this->ResumeLayout(false);
 			this->PerformLayout();
 
@@ -193,11 +232,12 @@ namespace Trabajo_Terminal_I {
 
 		Threading::Thread ^t;
 		static PictureBox ^pbSourceT, ^pbFlowT;
-		static Label ^lblEeT, ^lblAeT;
-		static System::Windows::Forms::DataVisualization::Charting::Chart ^chartEeT, ^chartAeT;
+		static Label ^lblEeT, ^lblAeT, ^lblTimeT;
+		static System::Windows::Forms::DataVisualization::Charting::Chart ^chartEeT, ^chartAeT, ^chartTimesT;
 		static std::string *dirT;
 		static TesterForm ^curr;
 		static StatsTracker *track;
+		static std::clock_t *time;
 
 		static void Convert(cv::Mat &img, PictureBox ^pb) {
 			System::Drawing::Graphics^ graphics = pb->CreateGraphics();
@@ -229,6 +269,10 @@ namespace Trabajo_Terminal_I {
 			lblAeT->Text = gcnew System::String("Angular Error (avg.): ") + System::Convert::ToString(track->GetAngularErrorAvg() * 180.0 / CV_PI) + gcnew System::String("°");
 		}
 
+		static void EditTimeLabel() {
+			lblTimeT->Text = gcnew System::String("Time: ") + System::Convert::ToString(*time) + gcnew System::String(" ms");
+		}
+
 		static void EditEEChart() {
 			for (auto p : track->GetEndpointErrHistogram(0.1, 10.0, 0.1)) {
 				chartEeT->Series["Endpoint Err"]->Points->AddXY(p.first, p.second);
@@ -240,6 +284,16 @@ namespace Trabajo_Terminal_I {
 				chartAeT->Series["Angular Err"]->Points->AddXY(p.first, p.second);
 			}
 		}
+
+		static void EditTimesChart() {
+			int i = 0;
+			chartTimesT->Series["Time"]->Points->Clear();
+			for (auto p : track->GetTimes()) {
+				chartTimesT->Series["Time"]->Points->AddXY(i, p);
+				i++;
+			}
+		}
+
 
 		static void CloseApp() {
 			curr->Close();
@@ -319,7 +373,11 @@ namespace Trabajo_Terminal_I {
 				frame->Rescale(width, height);
 				frame->GetMatrixOnCache();
 				lk.AddFrame(frame);
+				std::clock_t start_time = std::clock();
 				lk.CalculateFlow(vx, vy);
+				std::clock_t ptime = (std::clock() - start_time) / (double)(CLOCKS_PER_SEC / 1000);
+				*time = ptime;
+				track->AddTime(ptime);
 				lk_result->AddFlow(vx, vy);
 				img = lk_result->GetMatrix();
 				cv::cvtColor(img, img, CV_BGR2RGB);
@@ -330,9 +388,11 @@ namespace Trabajo_Terminal_I {
 				track->CalcStats(vx, vy, gtx, gty, mask, aem, eem);
 				curr->Invoke(gcnew Action(&EditAELabel));
 				curr->Invoke(gcnew Action(&EditEELabel));
-				curr->Invoke(gcnew Action(&EditAEChart));
-				curr->Invoke(gcnew Action(&EditEEChart));
+				curr->Invoke(gcnew Action(&EditTimeLabel));
+				curr->Invoke(gcnew Action(&EditTimesChart));
 			}
+			curr->Invoke(gcnew Action(&EditAEChart));
+			curr->Invoke(gcnew Action(&EditEEChart));
 			track->PrintResults(dir);
 		}
 
@@ -351,10 +411,14 @@ namespace Trabajo_Terminal_I {
 		pbFlowT = pbFlow;
 		lblAeT = lblAe;
 		lblEeT = lblEe;
+		lblTimeT = lblTime;
 		chartEeT = chartEe;
 		chartAeT = chartAe;
+		chartTimesT = chartTimes;
+		time = new std::clock_t;
 		t = gcnew Thread(gcnew ThreadStart(&this->CalcFlowThread));
 		t->Start();
+		this->Focus();
 	}
 
 };
