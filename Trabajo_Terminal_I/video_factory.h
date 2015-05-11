@@ -11,6 +11,7 @@ class VideoFactory {
   VideoFactory(int, int, int);
   VideoFactory(std::string&, int, int, int);
   void AddFrame(cv::Mat&);
+  
 		
  private:
   std::string filename_;

@@ -20,3 +20,4 @@ VideoFactory::VideoFactory(std::string& filename, int width, int height, int fps
 void VideoFactory::AddFrame(cv::Mat& frame) {
 	output_ << frame;
 }
+

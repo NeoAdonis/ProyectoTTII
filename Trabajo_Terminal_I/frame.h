@@ -33,6 +33,8 @@ public:
 	void GetCacheOnMatrix();
 	void DeleteCache();
 
+	void AddFlow(cv::Mat&, cv::Mat&);
+
 	Frame Copy();
 
 private:

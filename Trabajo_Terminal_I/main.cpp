@@ -178,7 +178,7 @@ void PrintResults(std::string dir) {
 //read nameFile starting_number 
 //write to flow10.flo
 
-int main(int argc, char** argv) {
+int nomain(int argc, char** argv) {
 	if (argc < 3) {
 		int a;
 		std::cout << argc << "Video input file and output directory required.";

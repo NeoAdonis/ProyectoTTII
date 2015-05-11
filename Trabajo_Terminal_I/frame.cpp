@@ -152,3 +152,35 @@ void Frame::ResizeCache(int rows, int columns) {
 	if (cached) delete[] matrix_cache;
 	matrix_cache = new int[rows * columns];
 }
+
+const int kUp = 0x00FFFF; // LIGHT BLUE
+const int kDown = 0x00FF00; // GREEN
+const int kLeft = 0xFF0000; // RED
+const int kRight = 0xFFFF00; // YELLOW
+const double kIntensity = 4.7;
+
+void Frame::AddFlow(cv::Mat &vx, cv::Mat &vy) {
+	int height = vx.rows;
+	int width = vx.cols;
+	for (int x = 0; x < height; ++x) {
+		double* ptr_vx = vx.ptr<double>(x);
+		double* ptr_vy = vy.ptr<double>(x);
+		for (int y = 0; y < width; ++y, ++ptr_vx, ++ptr_vy) {
+			double X = *ptr_vx, Y = *ptr_vy;
+
+			int hor_color = 0;
+			double intensity = std::min(std::abs(Y) / kIntensity, 1.0);
+			for (int k = 0; k <= 16; k += 8) {
+				int color = (Y < 0) ? (kLeft >> k) & 255 : (kRight >> k) & 255;
+				hor_color |= static_cast<int>(color * intensity) << k;
+			}
+			int ver_color = 0;
+			intensity = std::min(std::abs(X) / kIntensity, 1.0);
+			for (int k = 0; k <= 16; k += 8) {
+				int color = (X < 0) ? (kUp >> k) & 255 : (kDown >> k) & 255;
+				ver_color |= static_cast<int>(color * intensity) << k;
+			}
+			this->SetPixel(x, y, hor_color | ver_color);
+		}
+	}
+}
