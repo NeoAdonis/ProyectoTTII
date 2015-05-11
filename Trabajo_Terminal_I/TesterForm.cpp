@@ -7,7 +7,7 @@
 
 using namespace System::Windows::Forms;
 
-
+[System::STAThread]
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd) {
 	Application::Run(gcnew Trabajo_Terminal_I::TesterForm);
 }

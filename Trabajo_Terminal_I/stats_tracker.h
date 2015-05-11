@@ -30,6 +30,10 @@ public:
 	void PrintResults(std::string dir);
 	double GetAngularErrorAvg();
 	double GetEndpointErrorAvg();
+	std::map< double, lld > GetEndpointErrHistogram(double start, double finish, double step);
+	std::map< double, lld > GetAngularErrHistogram(double start, double finish, double step);
 	~StatsTracker();
+private:
+	std::map< double, lld > GetHistogram(std::map< lld, lld > e_hist, double start, double finish, double step);
 };
 

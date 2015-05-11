@@ -109,6 +109,36 @@ void StatsTracker::ReadFile(cv::Mat &gtx, cv::Mat &gty, std::string dir, int fra
 	}
 }
 
+std::map< double, lld > StatsTracker::GetHistogram(std::map< lld, lld > e_hist, double sta, double fi, double st) {
+	lld step = st * HIST_MUL;
+	lld start = sta * HIST_MUL;
+	lld finish = fi * HIST_MUL;
+	lld i = start;
+	auto p = e_hist.begin();
+	std::map< double, lld > hist;
+	for (; p != e_hist.end() && p->first < i; p++);
+	for (i += step; p != e_hist.end(); i += step) {
+		lld sum = 0;
+		while (p != e_hist.end() && p->first < i) {
+			sum += p->second;
+			p++;
+		}
+		if (sum != 0LL)
+			hist[(double)i / HIST_MUL] = sum;
+		if (fi >= 0.0 && i > finish)
+			break;
+	}
+	return hist;
+}
+
+std::map< double, lld > StatsTracker::GetEndpointErrHistogram(double start, double finish, double step) {
+	return GetHistogram(ee_hist, start, finish, step);
+}
+
+std::map< double, lld > StatsTracker::GetAngularErrHistogram(double start, double finish, double step) {
+	return GetHistogram(ae_hist, start, finish, step);
+}
+
 void StatsTracker::PrintResults(std::string dir) {
 	std::string fileName = dir + "_res.txt";
 	FILE *out = fopen(fileName.c_str(), "w");
@@ -127,16 +157,9 @@ void StatsTracker::PrintResults(std::string dir) {
 
 	fileName = dir + "_hist.csv";
 	out = fopen(fileName.c_str(), "w");
-	lld i = 100000;
-	auto p = ee_hist.begin();
-	for (; p != ee_hist.end(); i += 100000) {
-		lld sum = 0;
-		while (p != ee_hist.end() && p->first < i) {
-			sum += p->second;
-			p++;
-		}
-		if (sum != 0LL)
-			fprintf(out, "%lf,%lf\n", (double)i / HIST_MUL, (double)sum);
+	auto hist = GetEndpointErrHistogram(0.0, -1, 0.1);
+	for (auto p : hist) {
+		fprintf(out, "%lf,%lf\n", p.first, (double)p.second);
 	}
 }
 

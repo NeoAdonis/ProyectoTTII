@@ -11,6 +11,11 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
 
+#include <msclr\marshal_cppstd.h>
+
+
+
+
 #include "frame.h"
 #include "lucas_kanade.h"
 #include "video_factory.h"
@@ -67,6 +72,8 @@ namespace Trabajo_Terminal_I {
 	private: System::Windows::Forms::PictureBox^  pbFlow;
 	private: System::Windows::Forms::Label^  lblEe;
 	private: System::Windows::Forms::Label^  lblAe;
+	private: System::Windows::Forms::DataVisualization::Charting::Chart^  chartEe;
+	private: System::Windows::Forms::DataVisualization::Charting::Chart^  chartAe;
 	protected:
 
 	protected:
@@ -84,53 +91,97 @@ namespace Trabajo_Terminal_I {
 		/// </summary>
 		void InitializeComponent(void)
 		{
+			System::Windows::Forms::DataVisualization::Charting::ChartArea^  chartArea1 = (gcnew System::Windows::Forms::DataVisualization::Charting::ChartArea());
+			System::Windows::Forms::DataVisualization::Charting::Legend^  legend1 = (gcnew System::Windows::Forms::DataVisualization::Charting::Legend());
+			System::Windows::Forms::DataVisualization::Charting::Series^  series1 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
+			System::Windows::Forms::DataVisualization::Charting::ChartArea^  chartArea2 = (gcnew System::Windows::Forms::DataVisualization::Charting::ChartArea());
+			System::Windows::Forms::DataVisualization::Charting::Legend^  legend2 = (gcnew System::Windows::Forms::DataVisualization::Charting::Legend());
+			System::Windows::Forms::DataVisualization::Charting::Series^  series2 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
 			this->pbSource = (gcnew System::Windows::Forms::PictureBox());
 			this->pbFlow = (gcnew System::Windows::Forms::PictureBox());
 			this->lblEe = (gcnew System::Windows::Forms::Label());
 			this->lblAe = (gcnew System::Windows::Forms::Label());
+			this->chartEe = (gcnew System::Windows::Forms::DataVisualization::Charting::Chart());
+			this->chartAe = (gcnew System::Windows::Forms::DataVisualization::Charting::Chart());
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pbSource))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pbFlow))->BeginInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->chartEe))->BeginInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->chartAe))->BeginInit();
 			this->SuspendLayout();
 			// 
 			// pbSource
 			// 
 			this->pbSource->Location = System::Drawing::Point(0, 0);
 			this->pbSource->Name = L"pbSource";
-			this->pbSource->Size = System::Drawing::Size(322, 143);
+			this->pbSource->Size = System::Drawing::Size(300, 200);
 			this->pbSource->TabIndex = 0;
 			this->pbSource->TabStop = false;
 			// 
 			// pbFlow
 			// 
-			this->pbFlow->Location = System::Drawing::Point(0, 159);
+			this->pbFlow->Location = System::Drawing::Point(0, 206);
 			this->pbFlow->Name = L"pbFlow";
-			this->pbFlow->Size = System::Drawing::Size(322, 143);
+			this->pbFlow->Size = System::Drawing::Size(300, 200);
 			this->pbFlow->TabIndex = 1;
 			this->pbFlow->TabStop = false;
 			// 
 			// lblEe
 			// 
 			this->lblEe->AutoSize = true;
-			this->lblEe->Location = System::Drawing::Point(346, 13);
+			this->lblEe->Location = System::Drawing::Point(306, 9);
 			this->lblEe->Name = L"lblEe";
-			this->lblEe->Size = System::Drawing::Size(110, 13);
+			this->lblEe->Size = System::Drawing::Size(116, 13);
 			this->lblEe->TabIndex = 2;
-			this->lblEe->Text = L"Endpoint Error (avg.): ";
+			this->lblEe->Text = L"Endpoint Error (avg.): --";
 			// 
 			// lblAe
 			// 
 			this->lblAe->AutoSize = true;
-			this->lblAe->Location = System::Drawing::Point(383, 120);
+			this->lblAe->Location = System::Drawing::Point(306, 32);
 			this->lblAe->Name = L"lblAe";
 			this->lblAe->Size = System::Drawing::Size(110, 13);
 			this->lblAe->TabIndex = 3;
 			this->lblAe->Text = L"Angular Error (avg.): --";
 			// 
+			// chartEe
+			// 
+			chartArea1->Name = L"ChartArea1";
+			this->chartEe->ChartAreas->Add(chartArea1);
+			legend1->Name = L"Legend1";
+			this->chartEe->Legends->Add(legend1);
+			this->chartEe->Location = System::Drawing::Point(309, 58);
+			this->chartEe->Name = L"chartEe";
+			series1->ChartArea = L"ChartArea1";
+			series1->Legend = L"Legend1";
+			series1->Name = L"Endpoint Err";
+			this->chartEe->Series->Add(series1);
+			this->chartEe->Size = System::Drawing::Size(347, 171);
+			this->chartEe->TabIndex = 4;
+			this->chartEe->Text = L"chart1";
+			// 
+			// chartAe
+			// 
+			chartArea2->Name = L"ChartArea1";
+			this->chartAe->ChartAreas->Add(chartArea2);
+			legend2->Name = L"Legend1";
+			this->chartAe->Legends->Add(legend2);
+			this->chartAe->Location = System::Drawing::Point(309, 237);
+			this->chartAe->Name = L"chartAe";
+			series2->ChartArea = L"ChartArea1";
+			series2->Legend = L"Legend1";
+			series2->Name = L"Angular Err";
+			this->chartAe->Series->Add(series2);
+			this->chartAe->Size = System::Drawing::Size(347, 171);
+			this->chartAe->TabIndex = 5;
+			this->chartAe->Text = L"chart1";
+			// 
 			// TesterForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->ClientSize = System::Drawing::Size(760, 420);
+			this->ClientSize = System::Drawing::Size(667, 420);
+			this->Controls->Add(this->chartAe);
+			this->Controls->Add(this->chartEe);
 			this->Controls->Add(this->lblAe);
 			this->Controls->Add(this->lblEe);
 			this->Controls->Add(this->pbFlow);
@@ -140,6 +191,8 @@ namespace Trabajo_Terminal_I {
 			this->Load += gcnew System::EventHandler(this, &TesterForm::TesterForm_Load);
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pbSource))->EndInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pbFlow))->EndInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->chartEe))->EndInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->chartAe))->EndInit();
 			this->ResumeLayout(false);
 			this->PerformLayout();
 
@@ -149,6 +202,7 @@ namespace Trabajo_Terminal_I {
 		Threading::Thread ^t;
 		static PictureBox ^pbSourceT, ^pbFlowT;
 		static Label ^lblEeT, ^lblAeT;
+		static System::Windows::Forms::DataVisualization::Charting::Chart ^chartEeT, ^chartAeT;
 		static std::string *dirT;
 		static TesterForm ^curr;
 		static StatsTracker *track;
@@ -180,7 +234,23 @@ namespace Trabajo_Terminal_I {
 		}
 
 		static void EditAELabel() {
-			lblAeT->Text = gcnew System::String("Angular Error (avg.): ") + System::Convert::ToString(track->GetAngularErrorAvg() * 180.0 / CV_PI);
+			lblAeT->Text = gcnew System::String("Angular Error (avg.): ") + System::Convert::ToString(track->GetAngularErrorAvg() * 180.0 / CV_PI) + gcnew System::String("°");
+		}
+
+		static void EditEEChart() {
+			for (auto p : track->GetEndpointErrHistogram(0.1, 10.0, 0.1)) {
+				chartEeT->Series["Endpoint Err"]->Points->AddXY(p.first, p.second);
+			}
+		}
+
+		static void EditAEChart() {
+			for (auto p : track->GetAngularErrHistogram(0.1, 10.0, 0.1)) {
+				chartAeT->Series["Angular Err"]->Points->AddXY(p.first, p.second);
+			}
+		}
+
+		static void CloseApp() {
+			curr->Close();
 		}
 
 		static void CalcFlowThread()
@@ -191,6 +261,7 @@ namespace Trabajo_Terminal_I {
 			vcapture.open(dir);
 			if (!vcapture.isOpened()) {
 				System::Windows::Forms::MessageBox::Show("Could not initialize capturing.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
+				curr->Invoke(gcnew Action(&CloseApp));
 				return;
 			}
 
@@ -267,17 +338,29 @@ namespace Trabajo_Terminal_I {
 				track->CalcStats(vx, vy, gtx, gty, mask, aem, eem);
 				curr->Invoke(gcnew Action(&EditAELabel));
 				curr->Invoke(gcnew Action(&EditEELabel));
+				curr->Invoke(gcnew Action(&EditAEChart));
+				curr->Invoke(gcnew Action(&EditEEChart));
 			}
 			track->PrintResults(dir);
 		}
 
 	private: System::Void TesterForm_Load(System::Object^  sender, System::EventArgs^  e) {
+		std::string dir;
 		curr = this;
-		dirT = new std::string("H:\\Test\\test.avi");
+		OpenFileDialog ^ofd = gcnew OpenFileDialog();
+		if (ofd->ShowDialog() == System::Windows::Forms::DialogResult::OK) {
+			dir = msclr::interop::marshal_as<std::string>(ofd->FileName);
+			dirT = &dir;
+		}
+		else {
+			Close();
+		}
 		pbSourceT = pbSource;
 		pbFlowT = pbFlow;
 		lblAeT = lblAe;
 		lblEeT = lblEe;
+		chartEeT = chartEe;
+		chartAeT = chartAe;
 		t = gcnew Thread(gcnew ThreadStart(&this->CalcFlowThread));
 		t->Start();
 	}
