@@ -30,9 +30,6 @@
     <ClInclude Include="simple_flow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="test_generator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TesterForm.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -57,9 +54,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="simple_flow.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="test_generator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TesterForm.cpp">

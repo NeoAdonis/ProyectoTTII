@@ -154,7 +154,6 @@
     <ClInclude Include="TesterForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
-    <ClInclude Include="test_generator.h" />
     <ClInclude Include="video_factory.h" />
   </ItemGroup>
   <ItemGroup>
@@ -180,7 +179,6 @@
       <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ProgramDatabase</DebugInformationFormat>
       <ExceptionHandling Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Async</ExceptionHandling>
     </ClCompile>
-    <ClCompile Include="test_generator.cpp" />
     <ClCompile Include="video_factory.cpp" />
   </ItemGroup>
   <ItemGroup>

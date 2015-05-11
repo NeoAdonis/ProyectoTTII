@@ -1,27 +1,19 @@
 #pragma once
 
-#include <cstdio>
-#include <cmath>
-#include <cstdlib>
 #include <string>
-#include <iostream>
 #include <map>
+
+#include <msclr\marshal_cppstd.h>
 
 #include "opencv2/video/tracking.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
-
-#include <msclr\marshal_cppstd.h>
-
-
-
 
 #include "frame.h"
 #include "lucas_kanade.h"
 #include "video_factory.h"
 #include "horn_schunck.h"
 #include "simple_flow.h"
-#include "test_generator.h"
 #include "stats_tracker.h"
 
 #define TAG_STRING "PIEH"
