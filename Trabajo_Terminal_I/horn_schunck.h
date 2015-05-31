@@ -15,7 +15,7 @@ class HornSchunck {
 	void RemoveFrame();
 
   // Flow calculation method
-	void CalculateFlow(double**, double**);
+	void CalculateFlow(cv::Mat &, cv::Mat &);
 
  private:
   // Algorithm constants

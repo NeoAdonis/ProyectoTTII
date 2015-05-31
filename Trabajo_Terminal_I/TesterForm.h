@@ -238,6 +238,7 @@ namespace Trabajo_Terminal_I {
 		static TesterForm ^curr;
 		static StatsTracker *track;
 		static std::clock_t *time;
+		static bool doMask;
 
 		static void Convert(cv::Mat &img, PictureBox ^pb) {
 			System::Drawing::Graphics^ graphics = pb->CreateGraphics();
@@ -303,20 +304,28 @@ namespace Trabajo_Terminal_I {
 		{
 			std::string dir = *dirT;
 
-			cv::VideoCapture vcapture;
+			cv::VideoCapture vcapture, mcapture;
 			vcapture.open(dir);
 			if (!vcapture.isOpened()) {
 				System::Windows::Forms::MessageBox::Show("Could not initialize capturing.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
 				curr->Invoke(gcnew Action(&CloseApp));
 				return;
 			}
+			if (doMask) {
+				mcapture.open(dir + "_border.avi");
+				if (!mcapture.isOpened()) {
+					System::Windows::Forms::MessageBox::Show("Could not find border mask.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
+					curr->Invoke(gcnew Action(&CloseApp));
+					return;
+				}
+			}
 
-			cv::Mat capture;
+			cv::Mat capture, cmask;
 
 			int width = 300, height = 200;
 			int orig_width, orig_height;
 
-			LucasKanade lk;
+			LucasKanade flow;
 
 			VideoFactory lk_vf(dir + "-lk-flow.avi", width, height, vcapture.get(CV_CAP_PROP_FPS));
 			VideoFactory ee_vf(dir + "-lk-ee.avi", width, height, vcapture.get(CV_CAP_PROP_FPS));
@@ -345,9 +354,17 @@ namespace Trabajo_Terminal_I {
 
 			track->InitStats(ae_rl, ee_rl);
 
-			for (int i = 0; i <= 100; ++i) {
+			for (int i = 0; i < 30; ++i) {
 
 				vcapture >> capture;
+				if (doMask) {
+					mcapture >> cmask;
+					for (int i = 0; i < mask.rows; i++){
+						for (int j = 0; j < mask.cols; j++){
+							mask.at<uchar>(i, j) = cmask.at<uchar>(i, j) ? 1 : 0;
+						}
+					}
+				}
 				if (capture.empty()) break;
 
 				if (i == 0) {
@@ -372,9 +389,9 @@ namespace Trabajo_Terminal_I {
 				Frame* frame = new Frame(&capture);
 				frame->Rescale(width, height);
 				frame->GetMatrixOnCache();
-				lk.AddFrame(frame);
+				flow.AddFrame(frame);
 				std::clock_t start_time = std::clock();
-				lk.CalculateFlow(vx, vy);
+				flow.CalculateFlow(vx, vy);
 				std::clock_t ptime = (std::clock() - start_time) / (double)(CLOCKS_PER_SEC / 1000);
 				*time = ptime;
 				track->AddTime(ptime);
@@ -407,6 +424,7 @@ namespace Trabajo_Terminal_I {
 		else {
 			Close();
 		}
+		doMask = false;
 		pbSourceT = pbSource;
 		pbFlowT = pbFlow;
 		lblAeT = lblAe;

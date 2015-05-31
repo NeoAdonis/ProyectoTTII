@@ -22,13 +22,13 @@ void HornSchunck::RemoveFrame() {
 	delete frame_to_delete;
 }
 
-void HornSchunck::CalculateFlow(double** u, double** v) {
+void HornSchunck::CalculateFlow(cv::Mat &vx, cv::Mat &vy) {
 	int rows = frames.back()->Rows();
 	int cols = frames.back()->Columns();
-	*u = new double[rows * cols];
-	*v = new double[rows * cols];
-	std::fill(*u, *u + rows * cols, 0.0);
-	std::fill(*v, *v + rows * cols, 0.0);
+	double *u = new double[rows * cols];
+	double *v = new double[rows * cols];
+	std::fill(u, u + rows * cols, 0.0);
+	std::fill(v, v + rows * cols, 0.0);
 
 	if (frames.size() == 1) return;
 
@@ -38,10 +38,10 @@ void HornSchunck::CalculateFlow(double** u, double** v) {
 	// Horn-Schunck iterations
 	for (int k = 0; k < kFlowIterations; ++k) {
 		// Local average for each iteration
-		double* up = LocalAverage(*u);
-		double* vp = LocalAverage(*v);
+		double* up = LocalAverage(u);
+		double* vp = LocalAverage(v);
 
-		double* ptr_u = *u, *ptr_v = *v;
+		double* ptr_u = u, *ptr_v = v;
 		double* ptr_up = up, *ptr_vp = vp;
 		double* ptr_ix = ix, *ptr_iy = iy, *ptr_it = it;
 		for (int i = 0; i < rows * cols; ++i, ++ptr_u, ++ptr_v) {
@@ -55,6 +55,19 @@ void HornSchunck::CalculateFlow(double** u, double** v) {
 		delete[] up;
 		delete[] vp;
 	}
+	double *cu = u;
+	double *cv = v;
+	for (int i = 0; i < rows; ++i) {
+		double* ptr_x = vx.ptr<double>(i);
+		double* ptr_y = vy.ptr<double>(i);
+		for (int j = 0; j < cols; ++j, ++ptr_x, ++ptr_y) {
+			*ptr_x = *cu;
+			*ptr_y = *cv;
+			cu++; cv++;
+		}
+	}
+	delete[] u;
+	delete[] v;
 	delete[] ix;
 	delete[] iy;
 	delete[] it;
