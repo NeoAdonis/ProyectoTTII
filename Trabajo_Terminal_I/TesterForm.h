@@ -419,7 +419,7 @@ namespace Trabajo_Terminal_I {
 		OpenFileDialog ^ofd = gcnew OpenFileDialog();
 		if (ofd->ShowDialog() == System::Windows::Forms::DialogResult::OK) {
 			dir = msclr::interop::marshal_as<std::string>(ofd->FileName);
-			dirT = &dir;
+			dirT = new std::string(dir);
 		}
 		else {
 			Close();
