@@ -217,7 +217,7 @@ namespace Trabajo_Terminal_I {
 			this->Controls->Add(this->pbFlow);
 			this->Controls->Add(this->pbSource);
 			this->Name = L"TesterForm";
-			this->Text = L"TesterForm";
+			this->Text = L"Tester";
 			this->Load += gcnew System::EventHandler(this, &TesterForm::TesterForm_Load);
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pbSource))->EndInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pbFlow))->EndInit();
@@ -248,12 +248,21 @@ namespace Trabajo_Terminal_I {
 		}
 
 		static void InitRelErrParams(std::vector< double > &ae_rl, std::vector< double > &ee_rl) {
-			ae_rl.push_back((CV_PI / 180.0) * 2.5);
-			ae_rl.push_back((CV_PI / 180.0) * 5.0);
-			ae_rl.push_back((CV_PI / 180.0) * 10.0);
+			ae_rl.push_back(2.5);
+			ae_rl.push_back(5.0);
+			ae_rl.push_back(10.0);
 			ee_rl.push_back(0.5);
 			ee_rl.push_back(1.0);
 			ee_rl.push_back(2.0);
+		}
+
+		static void InitAcParams(std::vector< int > &ae_ac, std::vector< int > &ee_ac) {
+			ae_ac.push_back(50);
+			ae_ac.push_back(75);
+			ae_ac.push_back(95);
+			ee_ac.push_back(90);
+			ee_ac.push_back(95);
+			ee_ac.push_back(99);
 		}
 
 		static void InitFrame(cv::Mat &capture, Frame *frame, int width, int height) {
@@ -267,7 +276,7 @@ namespace Trabajo_Terminal_I {
 		}
 
 		static void EditAELabel() {
-			lblAeT->Text = gcnew System::String("Angular Error (avg.): ") + System::Convert::ToString(track->GetAngularErrorAvg() * 180.0 / CV_PI) + gcnew System::String("°");
+			lblAeT->Text = gcnew System::String("Angular Error (avg.): ") + System::Convert::ToString(track->GetAngularErrorAvg()) + gcnew System::String("°");
 		}
 
 		static void EditTimeLabel() {
@@ -350,9 +359,12 @@ namespace Trabajo_Terminal_I {
 			}
 			std::vector< double > ae_rl;
 			std::vector< double > ee_rl;
+			std::vector< int > ae_ac;
+			std::vector< int > ee_ac;
 			InitRelErrParams(ae_rl, ee_rl);
+			InitAcParams(ae_ac, ee_ac);
 
-			track->InitStats(ae_rl, ee_rl);
+			track->InitStats(ae_rl, ee_rl, ae_ac, ee_ac);
 
 			for (int i = 0; i < 30; ++i) {
 
@@ -387,10 +399,10 @@ namespace Trabajo_Terminal_I {
 				Convert(img, pbSourceT);
 
 				Frame* frame = new Frame(&capture);
+				std::clock_t start_time = std::clock();
 				frame->Rescale(width, height);
 				frame->GetMatrixOnCache();
 				flow.AddFrame(frame);
-				std::clock_t start_time = std::clock();
 				flow.CalculateFlow(vx, vy);
 				std::clock_t ptime = (std::clock() - start_time) / (double)(CLOCKS_PER_SEC / 1000);
 				*time = ptime;

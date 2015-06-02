@@ -13,7 +13,7 @@ StatsTracker::~StatsTracker()
 }
 
 double StatsTracker::CalcAngularError(double u, double v, double gtu, double gtv) {
-	return std::acos((1.0 + u * gtu + v * gtv) / (std::sqrt(1.0 + u * u + v * v) * std::sqrt(1.0 + gtu * gtu + gtv * gtv)));
+	return std::acos((1.0 + u * gtu + v * gtv) / (std::sqrt(1.0 + u * u + v * v) * std::sqrt(1.0 + gtu * gtu + gtv * gtv))) * 180.0 / CV_PI;
 }
 
 double StatsTracker::CalcEndpointError(double u, double v, double gtu, double gtv) {
@@ -31,7 +31,7 @@ void StatsTracker::CountMeasuresAboveThreshold(double err, RX &r) {
 
 const double HIST_MUL = 1e6;
 
-void StatsTracker::InitStats(std::vector< double > ae_r_l, std::vector< double > ee_r_l) {
+void StatsTracker::InitStats(std::vector< double > ae_r_l, std::vector< double > ee_r_l, std::vector< int > ae_ac_l, std::vector< int > ee_ac_l) {
 	pix_sum = 0;
 	ae_sum = ee_sum = 0.0;
 	for (double ae_r_v : ae_r_l) {
@@ -40,6 +40,8 @@ void StatsTracker::InitStats(std::vector< double > ae_r_l, std::vector< double >
 	for (double ee_r_v : ee_r_l) {
 		ee_r[ee_r_v] = 0;
 	}
+	ae_ac = ae_ac_l;
+	ee_ac = ee_ac_l;
 }
 
 void StatsTracker::CalcStats(cv::Mat &u, cv::Mat &v, cv::Mat &gtu, cv::Mat &gtv, cv::Mat &mask, cv::Mat &aem, cv::Mat &eem) {
@@ -56,10 +58,6 @@ void StatsTracker::CalcStats(cv::Mat &u, cv::Mat &v, cv::Mat &gtu, cv::Mat &gtv,
 			if (!(*p_mask)) {
 				continue;
 			}
-			/*
-			if (*p_gtu == 0.0 && *p_gtv == 0.0) {
-			continue;
-			}*/
 			pix_sum++;
 			double ae = CalcAngularError(*p_u, *p_v, *p_gtu, *p_gtv);
 			double ee = CalcEndpointError(*p_u, *p_v, *p_gtu, *p_gtv);
@@ -144,23 +142,53 @@ void StatsTracker::PrintResults(std::string dir) {
 	FILE *out = fopen(fileName.c_str(), "w");
 	double x, y;
 	fprintf(out, "Angular\n");
-	fprintf(out, "Avg = %lf\n", GetAngularErrorAvg());
+	fprintf(out, "Avg = %lf°\n", GetAngularErrorAvg());
 	for (auto r : ae_r) {
-		fprintf(out, "R%.3lf : %.2lf\n", r.first, ((double)r.second / (double)pix_sum) * 100.0);
+		fprintf(out, "R%.1lf : %.2lf%%\n", r.first, ((double)r.second / (double)pix_sum) * 100.0);
 	}
+	for (auto a : ae_ac) {
+		fprintf(out, "A%d : %.2lf°\n", a, GetAccuracy(ae_hist, a));
+	}
+	fprintf(out, "\n");
 	fprintf(out, "Endpoint\n");
-	fprintf(out, "Avg = %lf\n", GetEndpointErrorAvg());
+	fprintf(out, "Avg = %lf px\n", GetEndpointErrorAvg());
 	for (auto r : ee_r) {
-		fprintf(out, "R%.1lf : %.2lf\n", r.first, ((double)r.second / (double)pix_sum) * 100.0);
+		fprintf(out, "R%.1lf : %.2lf%%\n", r.first, ((double)r.second / (double)pix_sum) * 100.0);
+	}
+	for (auto a : ae_ac) {
+		fprintf(out, "A%d : %.2lf px\n", a, GetAccuracy(ee_hist, a));
 	}
 	fclose(out);
 
-	fileName = dir + "_hist.csv";
+	fileName = dir + "_ee_hist.csv";
 	out = fopen(fileName.c_str(), "w");
-	auto hist = GetEndpointErrHistogram(0.0, -1, 0.1);
-	for (auto p : hist) {
+	auto ee_hist = GetEndpointErrHistogram(0.0, -1, 0.1);
+	fprintf(out, "Endpoint Error (pixels),Amount of pixels\n");
+	for (auto p : ee_hist) {
 		fprintf(out, "%lf,%lf\n", p.first, (double)p.second);
 	}
+	fclose(out);
+
+	fileName = dir + "_ae_hist.csv";
+	out = fopen(fileName.c_str(), "w");
+	auto ae_hist = GetAngularErrHistogram(0.0, -1, 0.1);
+	fprintf(out, "Angular Error (deg),Amount of pixels\n");
+	for (auto p : ae_hist) {
+		fprintf(out, "%lf,%lf\n", p.first, (double)p.second);
+	}
+	fclose(out);
+
+	fileName = dir + "_time.csv";
+	out = fopen(fileName.c_str(), "w");
+	auto times = GetTimes();
+	int i = 0;
+	fprintf(out, "Frame,Processing time (ms)\n");
+	for (auto t : times) {
+		fprintf(out, "%d,%lf\n", i, (double)t);
+		i++;
+	}
+	fclose(out);
+
 }
 
 double StatsTracker::GetAngularErrorAvg() {
