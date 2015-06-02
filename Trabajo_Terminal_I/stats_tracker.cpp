@@ -56,6 +56,7 @@ void StatsTracker::CalcStats(cv::Mat &u, cv::Mat &v, cv::Mat &gtu, cv::Mat &gtv,
 		double* p_eem = eem.ptr<double>(i);
 		for (int j = 0; j < cols; ++j, ++p_u, ++p_v, ++p_gtu, ++p_gtv, ++p_mask, ++p_aem, ++p_eem) {
 			if (!(*p_mask)) {
+				*p_aem = *p_eem = 0.0;
 				continue;
 			}
 			pix_sum++;

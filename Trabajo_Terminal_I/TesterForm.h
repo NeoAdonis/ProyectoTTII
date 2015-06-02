@@ -421,6 +421,16 @@ namespace Trabajo_Terminal_I {
 				lk_vf.AddFrame(lk_result->GetMatrix());
 				track->ReadFile(gtx, gty, dir, i);
 				track->CalcStats(vx, vy, gtx, gty, mask, aem, eem);
+				if (vx.rows) {
+					for (int x = 0; x < height; ++x) {
+						double* ptr_ee = eem.ptr<double>(x);
+						for (int y = 0; y < width; ++y, ++ptr_ee) {
+							ee_result->SetPixel(x, y, std::min(255, (int)(255 * (*ptr_ee / 10.0))));
+						}
+					}
+					ee_result->GetCacheOnMatrix();
+					ee_vf.AddFrame(ee_result->GetMatrix());
+				}
 				curr->Invoke(gcnew Action(&EditAELabel));
 				curr->Invoke(gcnew Action(&EditEELabel));
 				curr->Invoke(gcnew Action(&EditTimeLabel));
