@@ -57,6 +57,8 @@ void HornSchunck::CalculateFlow(cv::Mat &vx, cv::Mat &vy) {
 	}
 	double *cu = u;
 	double *cv = v;
+	vx = cv::Mat(rows, cols, CV_64F);
+	vy = cv::Mat(rows, cols, CV_64F);
 	for (int i = 0; i < rows; ++i) {
 		double* ptr_x = vx.ptr<double>(i);
 		double* ptr_y = vy.ptr<double>(i);

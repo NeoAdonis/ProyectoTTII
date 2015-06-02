@@ -115,22 +115,22 @@ namespace Trabajo_Terminal_I {
 			// 
 			this->pbSource->Location = System::Drawing::Point(0, 0);
 			this->pbSource->Name = L"pbSource";
-			this->pbSource->Size = System::Drawing::Size(300, 200);
+			this->pbSource->Size = System::Drawing::Size(480, 360);
 			this->pbSource->TabIndex = 0;
 			this->pbSource->TabStop = false;
 			// 
 			// pbFlow
 			// 
-			this->pbFlow->Location = System::Drawing::Point(0, 206);
+			this->pbFlow->Location = System::Drawing::Point(561, 0);
 			this->pbFlow->Name = L"pbFlow";
-			this->pbFlow->Size = System::Drawing::Size(300, 200);
+			this->pbFlow->Size = System::Drawing::Size(480, 360);
 			this->pbFlow->TabIndex = 1;
 			this->pbFlow->TabStop = false;
 			// 
 			// lblEe
 			// 
 			this->lblEe->AutoSize = true;
-			this->lblEe->Location = System::Drawing::Point(306, 9);
+			this->lblEe->Location = System::Drawing::Point(-3, 549);
 			this->lblEe->Name = L"lblEe";
 			this->lblEe->Size = System::Drawing::Size(116, 13);
 			this->lblEe->TabIndex = 2;
@@ -139,7 +139,7 @@ namespace Trabajo_Terminal_I {
 			// lblAe
 			// 
 			this->lblAe->AutoSize = true;
-			this->lblAe->Location = System::Drawing::Point(306, 32);
+			this->lblAe->Location = System::Drawing::Point(344, 549);
 			this->lblAe->Name = L"lblAe";
 			this->lblAe->Size = System::Drawing::Size(110, 13);
 			this->lblAe->TabIndex = 3;
@@ -151,7 +151,7 @@ namespace Trabajo_Terminal_I {
 			this->chartEe->ChartAreas->Add(chartArea1);
 			legend1->Name = L"Legend1";
 			this->chartEe->Legends->Add(legend1);
-			this->chartEe->Location = System::Drawing::Point(309, 58);
+			this->chartEe->Location = System::Drawing::Point(0, 366);
 			this->chartEe->Name = L"chartEe";
 			series1->ChartArea = L"ChartArea1";
 			series1->Legend = L"Legend1";
@@ -167,7 +167,7 @@ namespace Trabajo_Terminal_I {
 			this->chartAe->ChartAreas->Add(chartArea2);
 			legend2->Name = L"Legend1";
 			this->chartAe->Legends->Add(legend2);
-			this->chartAe->Location = System::Drawing::Point(309, 237);
+			this->chartAe->Location = System::Drawing::Point(347, 366);
 			this->chartAe->Name = L"chartAe";
 			series2->ChartArea = L"ChartArea1";
 			series2->Legend = L"Legend1";
@@ -180,7 +180,7 @@ namespace Trabajo_Terminal_I {
 			// lblTime
 			// 
 			this->lblTime->AutoSize = true;
-			this->lblTime->Location = System::Drawing::Point(659, 9);
+			this->lblTime->Location = System::Drawing::Point(691, 549);
 			this->lblTime->Name = L"lblTime";
 			this->lblTime->Size = System::Drawing::Size(42, 13);
 			this->lblTime->TabIndex = 6;
@@ -192,7 +192,7 @@ namespace Trabajo_Terminal_I {
 			this->chartTimes->ChartAreas->Add(chartArea3);
 			legend3->Name = L"Legend1";
 			this->chartTimes->Legends->Add(legend3);
-			this->chartTimes->Location = System::Drawing::Point(662, 58);
+			this->chartTimes->Location = System::Drawing::Point(694, 366);
 			this->chartTimes->Name = L"chartTimes";
 			series3->ChartArea = L"ChartArea1";
 			series3->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::Spline;
@@ -207,7 +207,7 @@ namespace Trabajo_Terminal_I {
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->ClientSize = System::Drawing::Size(1019, 416);
+			this->ClientSize = System::Drawing::Size(1042, 572);
 			this->Controls->Add(this->chartTimes);
 			this->Controls->Add(this->lblTime);
 			this->Controls->Add(this->chartAe);
@@ -216,6 +216,7 @@ namespace Trabajo_Terminal_I {
 			this->Controls->Add(this->lblEe);
 			this->Controls->Add(this->pbFlow);
 			this->Controls->Add(this->pbSource);
+			this->MaximizeBox = false;
 			this->Name = L"TesterForm";
 			this->Text = L"Tester";
 			this->Load += gcnew System::EventHandler(this, &TesterForm::TesterForm_Load);
@@ -331,10 +332,10 @@ namespace Trabajo_Terminal_I {
 
 			cv::Mat capture, cmask;
 
-			int width = 300, height = 200;
+			int width = 480, height = 360;
 			int orig_width, orig_height;
 
-			LucasKanade flow;
+			HornSchunck flow;
 
 			VideoFactory lk_vf(dir + "-lk-flow.avi", width, height, vcapture.get(CV_CAP_PROP_FPS));
 			VideoFactory ee_vf(dir + "-lk-ee.avi", width, height, vcapture.get(CV_CAP_PROP_FPS));
