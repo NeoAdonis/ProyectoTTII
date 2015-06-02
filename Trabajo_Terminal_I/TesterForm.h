@@ -372,9 +372,14 @@ namespace Trabajo_Terminal_I {
 				vcapture >> capture;
 				if (doMask) {
 					mcapture >> cmask;
-					for (int i = 0; i < mask.rows; i++){
-						for (int j = 0; j < mask.cols; j++){
-							mask.at<uchar>(i, j) = cmask.at<uchar>(i, j) ? 1 : 0;
+					double ii, jj;
+					double iip = (double)cmask.rows / (double)mask.rows;
+					double jjp = (double)cmask.cols / (double)mask.cols;
+					ii = 0.0;
+					for (int i = 0; i < mask.rows; i++, ii += iip){
+						jj = 0.0;
+						for (int j = 0; j < mask.cols; j++, jj += jjp){
+							mask.at<uchar>(i, j) = cmask.at<uchar>((int)ii, (int)jj) ? 1 : 0;
 						}
 					}
 				}
@@ -437,7 +442,7 @@ namespace Trabajo_Terminal_I {
 		else {
 			Close();
 		}
-		doMask = false;
+		doMask = true;
 		pbSourceT = pbSource;
 		pbFlowT = pbFlow;
 		lblAeT = lblAe;
